@@ -10,13 +10,13 @@ json.ENCODERS_BY_TYPE[ObjectId] = str
 audit_app = APIRouter()
 
 
-@audit_app.post("/audit_data/read")
+@audit_app.post("/read_data")
 async def read__audit_data(value: Dict):
     data = list(Audit_Collection.find(value))
     return {"audit_data": data}
 
 
-@audit_app.delete("/audit_data/delete_one")
+@audit_app.delete("/delete_one")
 async def delete_audit_data(audit_id: str = Body(..., embed=True)):
     try:
         Audit_Collection.find_one_and_delete({"_id": ObjectId(audit_id)})
@@ -26,7 +26,7 @@ async def delete_audit_data(audit_id: str = Body(..., embed=True)):
         return "Successfully Deleted..."
 
 
-@audit_app.post("/audit_data/insert_one")
+@audit_app.post("/insert_one")
 async def insert_audit_data(given_value: Audit):
     given_value.user_id = ObjectId(given_value.user_id)
     given_value.instrument_id = ObjectId(given_value.instrument_id)
@@ -35,7 +35,7 @@ async def insert_audit_data(given_value: Audit):
     return {"inserted data": data}
 
 
-# @audit_app.put("/audit_data/update")
+# @audit_app.put("/update")
 # async def update_data(my_id: str, value: Dict):
 #     my_query = {"_id": ObjectId(my_id)}
 #     update = {"$set": value}
