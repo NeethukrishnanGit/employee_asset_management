@@ -8,6 +8,5 @@ class Instruments(BaseModel):
     type: str = Field(...)
     description: Optional[str]
     availability: bool = Field(...)
-    check_IN: str = Field(default=datetime.utcnow())
-    check_OUT: str = Field(default=datetime.utcnow())
-
+    check_in: str = Field(default=datetime.utcnow())
+    check_out: str = Field(default=datetime.utcnow())

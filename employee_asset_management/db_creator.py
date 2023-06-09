@@ -9,7 +9,7 @@ for each in collection:
     mydb.drop_collection(each)
 Instrument_Collection = mydb["instruments"]
 
-instruments =[
+instruments = [
     {
         "name": "prober",
         "type": "A",
