@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 from router.instrument import instrument_app
-
+from router.audit_trial import audit_app
 
 app = FastAPI()
 app.include_router(instrument_app)
+app.include_router(audit_app)
 
 
 @app.get("/")

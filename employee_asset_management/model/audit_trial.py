@@ -1,16 +1,9 @@
-from bson import ObjectId
 from pydantic import BaseModel, Field
-from enum import Enum
 from datetime import datetime
 
 
-class Status(str, Enum):
-    Check_out = "Check Out"
-    Check_in = "Check In"
-
-
 class Audit(BaseModel):
-    user_id: ObjectId = Field(...)
-    instrument_id: ObjectId = Field(...)
-    Event_Type: Status = Field(...)
-    Date_Time: str = Field(default=datetime.utcnow())
+    user_id: str = Field(...)
+    instrument_id: str = Field(...)
+    event_type: str = Field(...)
+    time = Field(default=datetime.utcnow())

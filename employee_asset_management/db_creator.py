@@ -102,25 +102,31 @@ audit_dict = [
     {
         "user_id": user_ids.inserted_ids[0],
         "instrument_id": instrument_ids.inserted_ids[0],
-        "event type": "check_out",
+        "event_type": "check_out",
         "time": datetime.datetime(2022, 11, 2, 00, 00, 00)
     },
     {
         "user_id": user_ids.inserted_ids[1],
         "instrument_id": instrument_ids.inserted_ids[0],
-        "event type": "check_in",
+        "event_type": "check_in",
         "time": datetime.datetime(2022, 11, 2, 00, 00, 00)
     },
     {
         "user_id": user_ids.inserted_ids[1],
         "instrument_id": instrument_ids.inserted_ids[1],
-        "event type": "check_out",
+        "event_type": "check_out",
         "time": datetime.datetime(2022, 11, 2, 00, 00, 00)
     },
     {
         "user_id": user_ids.inserted_ids[1],
         "instrument_id": instrument_ids.inserted_ids[2],
-        "event type": "check_in",
+        "event_type": "check_in",
+        "time": datetime.datetime(2022, 11, 2, 00, 00, 00)
+    },
+    {
+        "user_id": user_ids.inserted_ids[2],
+        "instrument_id": instrument_ids.inserted_ids[2],
+        "event_type": "check_out",
         "time": datetime.datetime(2022, 11, 2, 00, 00, 00)
     }
 ]
