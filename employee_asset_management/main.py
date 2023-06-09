@@ -4,9 +4,9 @@ from router.audit_trial import audit_app
 from router.user_info import user_app
 
 app = FastAPI()
-app.include_router(instrument_app)
-app.include_router(audit_app)
-app.include_router(user_app)
+app.include_router(instrument_app, tags=["instrument"], prefix="/instrument")
+app.include_router(audit_app, tags=["audit_trail"], prefix="/audit_trail")
+app.include_router(user_app, tags=["user"], prefix="/user")
 
 
 @app.get("/")
