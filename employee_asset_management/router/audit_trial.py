@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Body
 from pydantic import json
-from typing import Dict,Literal
+from typing import Dict
 from bson.objectid import ObjectId
-from employee_asset_management.db_creator import audit_trail_Collection
+from employee_asset_management.get_collection import audit_trail_Collection
 from employee_asset_management.model.audit_trial import Audit
 
 json.ENCODERS_BY_TYPE[ObjectId] = str

@@ -4,10 +4,8 @@ import pymongo
 
 myClient = pymongo.MongoClient("mongodb://localhost:27017/")
 mydb = myClient["employee_asset_management"]
-collection = mydb.list_collection_names()
-for each in collection:
-    mydb.drop_collection(each)
-Instrument_Collection = mydb["instruments"]
+
+instrument_Collection = mydb["instruments"]
 
 instruments = [
     {
@@ -69,7 +67,7 @@ instruments = [
 ]
 
 
-instrument_ids = Instrument_Collection.insert_many(instruments)
+instrument_ids = instrument_Collection.insert_many(instruments)
 
 user_Collection = mydb["users"]
 user_dict = [

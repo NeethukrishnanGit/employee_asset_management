@@ -6,4 +6,4 @@ class Audit(BaseModel):
     user_id: str = Field(...)
     instrument_id: str = Field(...)
     event_type: str = Field(...)
-    time = Field(default=datetime.utcnow())
+    time: datetime = Field(default=datetime(2000, 1, 1, 00, 00, 00))

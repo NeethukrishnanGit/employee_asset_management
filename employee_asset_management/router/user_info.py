@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Body
 from pydantic import json
 from typing import Dict
-from employee_asset_management.db_creator import user_Collection
+from employee_asset_management.get_collection import user_Collection
 from employee_asset_management.model.user_info import User
 from bson.objectid import ObjectId
 
