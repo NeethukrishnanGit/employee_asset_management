@@ -97,7 +97,7 @@ user_dict = [
 
 user_ids = user_Collection.insert_many(user_dict)
 
-Audit_Collection = mydb["Audit Data"]
+audit_trail_Collection = mydb["audit_trail_data"]
 audit_dict = [
     {
         "user_id": user_ids.inserted_ids[0],
@@ -131,5 +131,5 @@ audit_dict = [
     }
 ]
 
-audit_data = Audit_Collection.insert_many(audit_dict)
+audit_data = audit_trail_Collection.insert_many(audit_dict)
 print(mydb)

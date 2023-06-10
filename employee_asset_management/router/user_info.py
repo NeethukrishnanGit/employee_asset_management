@@ -10,14 +10,14 @@ json.ENCODERS_BY_TYPE[ObjectId] = str
 user_app = APIRouter()
 
 
-@user_app.post("/read_data")
-async def get_all_data(data: Dict):
+@user_app.post("/read_user_data")
+async def get_user_data(data: Dict):
     user = user_Collection.find(data)
     user_data = list(user)
     return {"user_data": user_data}
 
 
-@user_app.delete("/delete_data")
+@user_app.delete("/delete_user_data")
 async def delete_user_data(user_id: str = Body(..., embed=True)):
     try:
         user_Collection.find_one_and_delete({"_id": ObjectId(user_id)})
@@ -27,14 +27,14 @@ async def delete_user_data(user_id: str = Body(..., embed=True)):
         return "Successfully Deleted..."
 
 
-@user_app.post("/insert_data")
+@user_app.post("/insert_user_data")
 async def create_user_data(user: User):
     user_data = user.dict()
     new_user = user_Collection.insert_one(user_data)
     return {"_id": str(new_user.inserted_id), **user_data}
 
 
-@user_app.put("/update_data")
+@user_app.put("/update_user_data")
 async def update_user_data(user_id: str = Body(...), role_change: str = Body(...)):
     id_doc = {"_id": ObjectId(user_id)}
     set_doc = {"$set": {"role": role_change}}
