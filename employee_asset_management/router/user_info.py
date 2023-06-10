@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Body
 from pydantic import json
 from typing import Dict
-from employee_asset_management.get_collection import user_Collection
+from employee_asset_management.get_collection import user_Collection, instrument_Collection, audit_trail_Collection
 from employee_asset_management.model.user_info import User
 from bson.objectid import ObjectId
+from datetime import datetime
 
 json.ENCODERS_BY_TYPE[ObjectId] = str
 
@@ -41,3 +42,21 @@ async def update_user_data(user_id: str = Body(...), role_change: str = Body(...
     user_Collection.update_one(id_doc, set_doc)
     data = list(user_Collection.find(id_doc))
     return {"updated data": data}
+
+
+@user_app.post("/check_out_instrument")
+async def check_out(user_id: str, instrument_id: str):
+    instrument_query = {"_id": ObjectId(instrument_id)}
+    instrument_update = {"$set": {"availability": False,
+                                  "check_in": (datetime(2000, 1, 1, 00, 00, 00)),
+                                  "check_out": datetime.now()}}
+
+    instrument_Collection.update_one(instrument_query, instrument_update)
+    audit_trail_value = {
+        "user_id": ObjectId(user_id),
+        "instrument_id": ObjectId(instrument_id),
+        "event_type": "check_out",
+        "time": datetime.now()
+    }
+    audit_trail_Collection.insert_one(audit_trail_value)
+    return {"inserted data": audit_trail_value}
