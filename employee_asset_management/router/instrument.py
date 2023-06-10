@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status, Body
 from pydantic import json
-from employee_asset_management.get_collection import instrument_Collection
+from employee_asset_management.get_collection import instrument_Collection, audit_trail_Collection
 from bson.objectid import ObjectId
 from employee_asset_management.model.instrument import Instruments
 from typing import Dict
@@ -58,15 +58,18 @@ async def update_instrument(*,
     updated_data = list(instrument_Collection.find(query))
     return {"updated_data": updated_data}
 
-#
-# async def get_one_instrument(instrument_id: str):
-#     query = {"_id": ObjectId(instrument_id)}
-#     return Instrument_Collection.find(query)
-#
-#
-# @instrument_app.post("/checked_out_instruments/")
-# async def get_checked_out_instruments(user_id: str = Body(..., embed=True)):
-#     find_query = {"user_id": ObjectId(user_id), "event_type": "check_out"}
-#     data = audit_trail_Collection.find(find_query)
-#     return list(data)
-#
+
+async def get_one_instrument(instrument_id: str):
+    query = {"_id": ObjectId(instrument_id)}
+    return instrument_Collection.find(query)
+
+
+@instrument_app.post("/checked_out_instruments/")
+async def get_checked_out_instruments(user_id: str = Body(..., embed=True)):
+    find_query = {"user_id": ObjectId(user_id), "event_type": "check_out"}
+    find_data = {"_id": False, "instrument_id": True}
+    data = list(audit_trail_Collection.find(find_query, find_data))
+    available_instruments = [{"_id": ObjectId(instrument["instrument_id"])} for instrument in data]
+    get_query = {"$or": available_instruments, "availability": True}
+    find_instruments = instrument_Collection.find(get_query)
+    return list(find_instruments)
