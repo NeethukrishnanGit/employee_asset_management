@@ -44,19 +44,4 @@ async def update_user_data(user_id: str = Body(...), role_change: str = Body(...
     return {"updated data": data}
 
 
-@user_app.post("/check_out_instrument")
-async def check_out(user_id: str, instrument_id: str):
-    instrument_query = {"_id": ObjectId(instrument_id)}
-    instrument_update = {"$set": {"availability": False,
-                                  "check_in": (datetime(2000, 1, 1, 00, 00, 00)),
-                                  "check_out": datetime.now()}}
 
-    instrument_Collection.update_one(instrument_query, instrument_update)
-    audit_trail_value = {
-        "user_id": ObjectId(user_id),
-        "instrument_id": ObjectId(instrument_id),
-        "event_type": "check_out",
-        "time": datetime.now()
-    }
-    audit_trail_Collection.insert_one(audit_trail_value)
-    return {"inserted data": audit_trail_value}

@@ -4,6 +4,7 @@ from employee_asset_management.get_collection import instrument_Collection, audi
 from bson.objectid import ObjectId
 from employee_asset_management.model.instrument import Instruments
 from typing import Dict
+from datetime import datetime
 
 json.ENCODERS_BY_TYPE[ObjectId] = str
 
@@ -64,12 +65,39 @@ async def get_one_instrument(instrument_id: str):
     return instrument_Collection.find(query)
 
 
-@instrument_app.post("/checked_out_instruments/")
-async def get_checked_out_instruments(user_id: str = Body(..., embed=True)):
-    find_query = {"user_id": ObjectId(user_id), "event_type": "check_out"}
-    find_data = {"_id": False, "instrument_id": True}
-    data = list(audit_trail_Collection.find(find_query, find_data))
-    available_instruments = [{"_id": ObjectId(instrument["instrument_id"])} for instrument in data]
-    get_query = {"$or": available_instruments}
-    find_instruments = instrument_Collection.find(get_query)
-    return list(find_instruments)
+@instrument_app.post("/check_in_instrument")
+async def check_in_instrument(user_id: str, instrument_id: str):
+    instrument_query = {"_id": ObjectId(instrument_id)}
+    instrument_update = {"$set": {"availability": True,
+                                  "check_in": datetime.now(),
+                                  "check_out": (datetime(2000, 1, 1, 00, 00, 00))}}
+
+    instrument_Collection.update_one(instrument_query, instrument_update)
+    audit_trail_value = {
+        "user_id": ObjectId(user_id),
+        "instrument_id": ObjectId(instrument_id),
+        "event_type": "check_in",
+        "time": datetime.now()
+    }
+    audit_trail_Collection.insert_one(audit_trail_value)
+    data = list(instrument_Collection.find(instrument_query))
+    return {"checked_in_instrument": data}
+
+
+@instrument_app.post("/check_out_instrument")
+async def check_out(user_id: str, instrument_id: str):
+    instrument_query = {"_id": ObjectId(instrument_id)}
+    instrument_update = {"$set": {"availability": False,
+                                  "check_in": (datetime(2000, 1, 1, 00, 00, 00)),
+                                  "check_out": datetime.now()}}
+
+    instrument_Collection.update_one(instrument_query, instrument_update)
+    audit_trail_value = {
+        "user_id": ObjectId(user_id),
+        "instrument_id": ObjectId(instrument_id),
+        "event_type": "check_out",
+        "time": datetime.now()
+    }
+    audit_trail_Collection.insert_one(audit_trail_value)
+    data = list(instrument_Collection.find(instrument_query))
+    return {"checked_out_instrument": data}
