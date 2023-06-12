@@ -5,8 +5,8 @@ from router.user_info import user_app
 
 app = FastAPI()
 app.include_router(instrument_app, tags=["instruments"], prefix="/instruments")
-app.include_router(audit_app, tags=["audit_trail_data"], prefix="/audit_trail_data")
 app.include_router(user_app, tags=["user_data"], prefix="/user_data")
+app.include_router(audit_app, tags=["audit_trail_data"], prefix="/audit_trail_data")
 
 
 @app.get("/")

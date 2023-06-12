@@ -43,7 +43,7 @@ async def insert_audit_trail_data(given_value: Audit):
 #     return {"updated data": data}
 
 
-@audit_app.post("/checked_out_instruments/")
+@audit_app.post("/checked_out_instruments")
 async def get_checked_out_instruments(user_id: str = Body(..., embed=True)):
     find_query = {"user_id": ObjectId(user_id), "event_type": "check_out"}
     find_data = {"_id": False, "instrument_id": True}

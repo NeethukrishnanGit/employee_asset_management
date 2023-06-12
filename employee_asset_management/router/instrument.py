@@ -12,7 +12,7 @@ instrument_app = APIRouter()
 
 
 @instrument_app.post(
-    "/get_instrument/",
+    "/get_instrument",
     description="**To get An Instrument details specify the requirements inside the response body**",
     status_code=status.HTTP_302_FOUND
 )
@@ -21,8 +21,8 @@ async def get_instrument(search: Dict):
     return {"data": list(data)}
 
 
-@instrument_app.delete("/")
-async def delete_instrument(instrument_id: str = Body(..., embed=True)):
+@instrument_app.delete("/delete_one_instrument")
+async def delete_one_instrument(instrument_id: str = Body(..., embed=True)):
     try:
         query = {"_id": ObjectId(instrument_id)}
         instrument_Collection.find_one_and_delete(query)
@@ -33,26 +33,26 @@ async def delete_instrument(instrument_id: str = Body(..., embed=True)):
 
 
 @instrument_app.post(
-    "/",
+    "/add_one_instrument",
     response_model=Instruments,
     status_code=status.HTTP_201_CREATED,
     response_description="**instrument is added**"
 )
-async def add_instrument(instrument: Instruments):
+async def add_one_instrument(instrument: Instruments):
     data_dict = instrument.dict()
     result = instrument_Collection.insert_one(data_dict)
     return {"id": str(result.inserted_id), **data_dict}
 
 
 @instrument_app.put(
-    "/",
+    "/update_one_instrument",
     status_code=status.HTTP_200_OK,
     response_description="UPDATE SUCCESSFUL"
 )
-async def update_instrument(*,
-                            instrument_id: str = Body(...),
-                            update_data: Dict
-                            ):
+async def update_one_instrument(*,
+                                instrument_id: str = Body(...),
+                                update_data: Dict
+                                ):
     query = {"_id": ObjectId(instrument_id)}
     update = {"$set": update_data}
     instrument_Collection.update_one(query, update)
@@ -60,9 +60,10 @@ async def update_instrument(*,
     return {"updated_data": updated_data}
 
 
-async def get_one_instrument(instrument_id: str):
+def get_one_instrument(instrument_id: str):
     query = {"_id": ObjectId(instrument_id)}
-    return instrument_Collection.find(query)
+    data = instrument_Collection.find(query)
+    return list(data)
 
 
 @instrument_app.post("/check_in_instrument")
@@ -80,12 +81,12 @@ async def check_in_instrument(user_id: str, instrument_id: str):
         "time": datetime.now()
     }
     audit_trail_Collection.insert_one(audit_trail_value)
-    data = list(instrument_Collection.find(instrument_query))
+    data = get_one_instrument(instrument_id)
     return {"checked_in_instrument": data}
 
 
 @instrument_app.post("/check_out_instrument")
-async def check_out(user_id: str, instrument_id: str):
+async def check_out_instrument(user_id: str, instrument_id: str):
     instrument_query = {"_id": ObjectId(instrument_id)}
     instrument_update = {"$set": {"availability": False,
                                   "check_in": (datetime(2000, 1, 1, 00, 00, 00)),
@@ -99,11 +100,11 @@ async def check_out(user_id: str, instrument_id: str):
         "time": datetime.now()
     }
     audit_trail_Collection.insert_one(audit_trail_value)
-    data = list(instrument_Collection.find(instrument_query))
+    data = get_one_instrument(instrument_id)
     return {"checked_out_instrument": data}
 
 
-@instrument_app.post("/instruments_available")
-async def check_available():
+@instrument_app.post("/available_instruments")
+async def check_available_instruments():
     data = instrument_Collection.find({"availability": True})
     return {"instruments_available": list(data)}
