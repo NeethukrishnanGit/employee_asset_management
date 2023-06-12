@@ -70,6 +70,6 @@ async def get_checked_out_instruments(user_id: str = Body(..., embed=True)):
     find_data = {"_id": False, "instrument_id": True}
     data = list(audit_trail_Collection.find(find_query, find_data))
     available_instruments = [{"_id": ObjectId(instrument["instrument_id"])} for instrument in data]
-    get_query = {"$or": available_instruments, "availability": True}
+    get_query = {"$or": available_instruments}
     find_instruments = instrument_Collection.find(get_query)
     return list(find_instruments)
