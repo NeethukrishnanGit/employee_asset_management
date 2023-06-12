@@ -101,3 +101,9 @@ async def check_out(user_id: str, instrument_id: str):
     audit_trail_Collection.insert_one(audit_trail_value)
     data = list(instrument_Collection.find(instrument_query))
     return {"checked_out_instrument": data}
+
+
+@instrument_app.post("/instruments_available")
+async def check_available():
+    data = instrument_Collection.find({"availability": True})
+    return {"instruments_available": list(data)}

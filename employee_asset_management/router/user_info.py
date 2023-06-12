@@ -42,6 +42,3 @@ async def update_user_data(user_id: str = Body(...), role_change: str = Body(...
     user_Collection.update_one(id_doc, set_doc)
     data = list(user_Collection.find(id_doc))
     return {"updated data": data}
-
-
-
