@@ -125,6 +125,10 @@ async def check_out_instrument(user_id: str, instrument_id: str):
         instrument_id_check = instrument_Collection.find_one({"_id": ObjectId(instrument_id)})
         if not instrument_id_check:
             raise Exception("instrument id is invalid...")
+        availability_check = instrument_Collection.find_one({"_id": ObjectId(instrument_id), "availability": True})
+        if not availability_check:
+            return {
+                "checked_out_instrument": [{"_id": instrument_id, "check_out": "instrument is already checked_out"}]}
         instrument_query = {"_id": ObjectId(instrument_id)}
         instrument_update = {"$set": {"availability": False,
                                       "check_in": (datetime(2000, 1, 1, 00, 00, 00)),
@@ -147,3 +151,35 @@ async def check_available_instruments():
     """Endpoint to instruments available at present in the inventory"""
     data = instrument_Collection.find({"availability": True})
     return {"instruments_available": list(data)}
+
+
+@instrument_app.post("/check_out_multiple",
+                     description="Enter multiple instruments inside the instruments_list to check_out")
+async def check_out_multiple(
+        *,
+        user_id: str = Body(..., embed=True),
+        instruments_list: list[str] = Body(...)):
+    invalid_instruments = []
+    for instrument_id in instruments_list:
+        try:
+            instrument_id_check = instrument_Collection.find_one({"_id": ObjectId(instrument_id)})
+            if not instrument_id_check:
+                instruments_list.remove(instrument_id)
+                invalid_instruments.append(instrument_id)
+        except InvalidId:
+            instruments_list.remove(instrument_id)
+            invalid_instruments.append(instrument_id)
+
+    instruments = [await check_out_instrument(user_id, instrument) for instrument in instruments_list]
+    already_checked_out = []
+    check_out_list = []
+    for check_out in instruments:
+        check = check_out["checked_out_instrument"][0]
+        if check["check_out"] == "instrument is already checked_out":
+            already_checked_out.append(check)
+        else:
+            check_out_list.append(check)
+    check_outs = {"multiple_checkouts": check_out_list,
+                  "already_checked_out": already_checked_out,
+                  "invalid_instruments": invalid_instruments}
+    return check_outs
