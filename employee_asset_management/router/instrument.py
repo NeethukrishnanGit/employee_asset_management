@@ -81,16 +81,21 @@ def get_one_instrument(instrument_id: str):
 @instrument_app.post("/check_in_instrument")
 async def check_in_instrument(user_id: str, instrument_id: str):
     try:
+        # instrument_id check
+        instrument_id_check = instrument_Collection.find_one({"_id": ObjectId(instrument_id)})
+        if not instrument_id_check:
+            raise Exception("instrument id is invalid...")
+        # user_id check
+        user_id_check = user_Collection.find_one({"_id": ObjectId(user_id)})
+        if not user_id_check:
+            raise Exception("user id is invalid...")
         instrument_query = {"_id": ObjectId(instrument_id)}
         instrument_update = {"$set": {"availability": True,
                                       "check_in": datetime.now(),
                                       "check_out": (datetime(2000, 1, 1, 00, 00, 00))}}
 
         instrument_Collection.update_one(instrument_query, instrument_update)
-        #user_id check
-        user_id_check = user_Collection.find_one({"_id":ObjectId(user_id)})
-        if not user_id_check:
-            raise Exception("user id is invalid")
+
         audit_trail_value = {
             "user_id": ObjectId(user_id),
             "instrument_id": ObjectId(instrument_id),
@@ -99,32 +104,37 @@ async def check_in_instrument(user_id: str, instrument_id: str):
         }
         audit_trail_Collection.insert_one(audit_trail_value)
         data = get_one_instrument(instrument_id)
-        if not data:
-            raise Exception("instrument id is invalid")
-
         return {"checked_in_instrument": data}
-
     except Exception as e:
         return str(e)
 
 
 @instrument_app.post("/check_out_instrument")
 async def check_out_instrument(user_id: str, instrument_id: str):
-    instrument_query = {"_id": ObjectId(instrument_id)}
-    instrument_update = {"$set": {"availability": False,
-                                  "check_in": (datetime(2000, 1, 1, 00, 00, 00)),
-                                  "check_out": datetime.now()}}
-
-    instrument_Collection.update_one(instrument_query, instrument_update)
-    audit_trail_value = {
-        "user_id": ObjectId(user_id),
-        "instrument_id": ObjectId(instrument_id),
-        "event_type": "check_out",
-        "time": datetime.now()
-    }
-    audit_trail_Collection.insert_one(audit_trail_value)
-    data = get_one_instrument(instrument_id)
-    return {"checked_out_instrument": data}
+    try:
+        # user_id check
+        user_id_check = user_Collection.find_one({"_id": ObjectId(user_id)})
+        if not user_id_check:
+            raise Exception("user id is invalid...")
+        # instrument_id check
+        instrument_id_check = instrument_Collection.find_one({"_id": ObjectId(instrument_id)})
+        if not instrument_id_check:
+            raise Exception("instrument id is invalid...")
+        instrument_query = {"_id": ObjectId(instrument_id)}
+        instrument_update = {"$set": {"availability": False,
+                                      "check_in": (datetime(2000, 1, 1, 00, 00, 00)),
+                                      "check_out": datetime.now()}}
+        instrument_Collection.update_one(instrument_query, instrument_update)
+        audit_trail_value = {
+            "user_id": ObjectId(user_id),
+            "instrument_id": ObjectId(instrument_id),
+            "event_type": "check_out",
+            "time": datetime.now()}
+        audit_trail_Collection.insert_one(audit_trail_value)
+        data = get_one_instrument(instrument_id)
+        return {"checked_out_instrument": data}
+    except Exception as e:
+        return str(e)
 
 
 @instrument_app.post("/available_instruments")
