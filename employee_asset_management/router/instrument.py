@@ -13,10 +13,10 @@ instrument_app = APIRouter()
 
 
 @instrument_app.post(
-    "/get_instrument",
-    description="**To get An Instrument details specify the requirements inside the response body**"
+    "/get_instrument"
 )
 async def get_instrument(search: Dict):
+    """Endpoint to fetch an instrument from the db"""
     for key, value in search.items():
         if key == "_id":
             search.update({key: ObjectId(search[key])})
@@ -26,6 +26,7 @@ async def get_instrument(search: Dict):
 
 @instrument_app.delete("/delete_one_instrument")
 async def delete_one_instrument(instrument_id: str = Body(..., embed=True)):
+    """Endpoint to delete the instruments"""
     try:
         query = {"_id": ObjectId(instrument_id)}
         result = instrument_Collection.find_one_and_delete(query)
@@ -41,9 +42,9 @@ async def delete_one_instrument(instrument_id: str = Body(..., embed=True)):
     "/add_one_instrument",
     response_model=Instruments,
     status_code=status.HTTP_201_CREATED,
-    response_description="**instrument is added**"
 )
 async def add_one_instrument(instrument: Instruments):
+    """Endpoint to add instruments"""
     data_dict = instrument.dict()
     result = instrument_Collection.insert_one(data_dict)
     return {"id": str(result.inserted_id), **data_dict}
@@ -58,6 +59,7 @@ async def update_one_instrument(*,
                                 instrument_id: str = Body(...),
                                 update_data: Dict
                                 ):
+    """Endpoint to update the instrument data"""
     try:
         query = {"_id": ObjectId(instrument_id)}
         update = {"$set": update_data}
@@ -72,6 +74,7 @@ async def update_one_instrument(*,
         raise HTTPException(status_code=400, detail=f"{e}")
 
 
+# function to retrieve instrument based on instrument id
 def get_one_instrument(instrument_id: str):
     query = {"_id": ObjectId(instrument_id)}
     data = instrument_Collection.find(query)
@@ -80,6 +83,7 @@ def get_one_instrument(instrument_id: str):
 
 @instrument_app.post("/check_in_instrument")
 async def check_in_instrument(user_id: str, instrument_id: str):
+    """Endpoint to Check in an instrument"""
     try:
         # instrument_id check
         instrument_id_check = instrument_Collection.find_one({"_id": ObjectId(instrument_id)})
@@ -111,6 +115,7 @@ async def check_in_instrument(user_id: str, instrument_id: str):
 
 @instrument_app.post("/check_out_instrument")
 async def check_out_instrument(user_id: str, instrument_id: str):
+    """Endpoint to Check out an instrument"""
     try:
         # user_id check
         user_id_check = user_Collection.find_one({"_id": ObjectId(user_id)})
@@ -139,5 +144,6 @@ async def check_out_instrument(user_id: str, instrument_id: str):
 
 @instrument_app.post("/available_instruments")
 async def check_available_instruments():
+    """Endpoint to instruments available at present in the inventory"""
     data = instrument_Collection.find({"availability": True})
     return {"instruments_available": list(data)}

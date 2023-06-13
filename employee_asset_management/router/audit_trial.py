@@ -12,6 +12,7 @@ audit_app = APIRouter()
 
 @audit_app.post("/read_audit_trail_data")
 async def read_audit_trail_data(value: Dict):
+    """Endpoint to fetch the audit trail data from the db"""
     for i in value.keys():
         if i in ["_id", "user_id", "instrument_id"]:
             value[i] = ObjectId(value[i])
@@ -21,6 +22,7 @@ async def read_audit_trail_data(value: Dict):
 
 @audit_app.delete("/delete_audit_trail_data")
 async def delete_audit_trail_data(audit_id: str = Body(..., embed=True)):
+    """Endpoint to delete the audit_trail_data"""
     try:
         result = audit_trail_Collection.find_one_and_delete({"_id": ObjectId(audit_id)})
         if result:
@@ -33,6 +35,7 @@ async def delete_audit_trail_data(audit_id: str = Body(..., embed=True)):
 
 @audit_app.post("/insert_audit_trail_data", status_code=201)
 async def insert_audit_trail_data(given_value: Audit):
+    """Endpoint to add an audit trail data"""
     try:
         given_value.user_id = ObjectId(given_value.user_id)
         given_value.instrument_id = ObjectId(given_value.instrument_id)
@@ -52,8 +55,9 @@ async def insert_audit_trail_data(given_value: Audit):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@audit_app.post("/checked_out_instruments")
-async def get_checked_out_instruments(user_id: str = Body(..., embed=True)):
+@audit_app.post("/checked_in_instruments")
+async def get_checked_in_instruments(user_id: str = Body(..., embed=True)):
+    """Endpoint that displays the instruments that are checked in by a specific employee"""
     try:
         if {"_id": ObjectId(user_id)} in list(user_Collection.find({}, {"_id": True})):
             find_query = {"user_id": ObjectId(user_id), "event_type": "check_out"}
