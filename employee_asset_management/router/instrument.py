@@ -1,7 +1,8 @@
-from fastapi import APIRouter, status, Body
+from fastapi import APIRouter, status, Body, HTTPException
 from pydantic import json
 from employee_asset_management.get_collection import instrument_Collection, audit_trail_Collection
 from bson.objectid import ObjectId
+from bson.errors import InvalidId
 from employee_asset_management.model.instrument import Instruments
 from typing import Dict
 from datetime import datetime
@@ -13,10 +14,12 @@ instrument_app = APIRouter()
 
 @instrument_app.post(
     "/get_instrument",
-    description="**To get An Instrument details specify the requirements inside the response body**",
-    status_code=status.HTTP_302_FOUND
+    description="**To get An Instrument details specify the requirements inside the response body**"
 )
 async def get_instrument(search: Dict):
+    for key, value in search.items():
+        if key == "_id":
+            search.update({key: ObjectId(search[key])})
     data = instrument_Collection.find(search)
     return {"data": list(data)}
 
@@ -25,9 +28,11 @@ async def get_instrument(search: Dict):
 async def delete_one_instrument(instrument_id: str = Body(..., embed=True)):
     try:
         query = {"_id": ObjectId(instrument_id)}
-        instrument_Collection.find_one_and_delete(query)
-    except:
-        return "Failed to delete"
+        result = instrument_Collection.find_one_and_delete(query)
+        if result is None:
+            raise HTTPException(status_code=404, detail="instrument not found")
+    except InvalidId as e:
+        raise HTTPException(status_code=400, detail=f"{e}")
     else:
         return "SUCCESSFULLY DELETED !!!"
 
@@ -53,11 +58,18 @@ async def update_one_instrument(*,
                                 instrument_id: str = Body(...),
                                 update_data: Dict
                                 ):
-    query = {"_id": ObjectId(instrument_id)}
-    update = {"$set": update_data}
-    instrument_Collection.update_one(query, update)
-    updated_data = list(instrument_Collection.find(query))
-    return {"updated_data": updated_data}
+    try:
+        query = {"_id": ObjectId(instrument_id)}
+        update = {"$set": update_data}
+        result = instrument_Collection.update_one(query, update)
+        if result.matched_count:
+            updated_data = list(instrument_Collection.find(query))
+            return {"updated_data": updated_data}
+        else:
+            raise HTTPException(status_code=404, detail="instrument not found")
+
+    except InvalidId as e:
+        raise HTTPException(status_code=400, detail=f"{e}")
 
 
 def get_one_instrument(instrument_id: str):
