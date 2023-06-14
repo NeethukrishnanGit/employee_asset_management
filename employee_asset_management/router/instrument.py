@@ -43,11 +43,21 @@ async def delete_one_instrument(instrument_id: str = Body(..., embed=True)):
     response_model=Instruments,
     status_code=status.HTTP_201_CREATED,
 )
+@instrument_app.post(
+    "/add_one_instrument",
+    status_code=status.HTTP_201_CREATED
+)
 async def add_one_instrument(instrument: Instruments):
     """Endpoint to add instruments"""
+    names = [i["name"] for i in instrument_Collection.find({}, {"_id": 0, "name": 1})]
+    print(names)
+    print(instrument.name)
     data_dict = instrument.dict()
-    result = instrument_Collection.insert_one(data_dict)
-    return {"id": str(result.inserted_id), **data_dict}
+    if instrument.name in names:
+        return {"error": "instrument name is already taken!!!, try a different name"}
+    else:
+        result = instrument_Collection.insert_one(data_dict)
+        return {"id": str(result.inserted_id), **data_dict}
 
 
 @instrument_app.put(
@@ -246,4 +256,3 @@ async def check_out_status():
                 i.update({"check_out_status": "True", "check_out_by": data['user_id'], "check_out_time": data["time"]})
             status_data.append(i)
     return {"status_data": status_data}
-
