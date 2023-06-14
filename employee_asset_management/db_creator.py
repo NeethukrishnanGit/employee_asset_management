@@ -30,7 +30,7 @@ instruments = [
         "description": "This is used to support and tilt the test head",
         "availability": True,
         "check_in": datetime.datetime(2022, 11, 16, 00, 00, 00),
-        "Check_out": datetime.datetime(2022, 11, 16, 00, 00, 00)
+        "check_out": datetime.datetime(2022, 11, 16, 00, 00, 00)
     },
     {
         "name": "test head",
@@ -104,14 +104,14 @@ audit_dict = [
         "time": datetime.datetime(2022, 11, 2, 00, 00, 00)
     },
     {
-        "user_id": user_ids.inserted_ids[1],
+        "user_id": user_ids.inserted_ids[0],
         "instrument_id": instrument_ids.inserted_ids[0],
         "event_type": "check_in",
         "time": datetime.datetime(2022, 11, 2, 00, 00, 00)
     },
     {
         "user_id": user_ids.inserted_ids[1],
-        "instrument_id": instrument_ids.inserted_ids[1],
+        "instrument_id": instrument_ids.inserted_ids[6],
         "event_type": "check_out",
         "time": datetime.datetime(2022, 11, 2, 00, 00, 00)
     },
@@ -123,7 +123,7 @@ audit_dict = [
     },
     {
         "user_id": user_ids.inserted_ids[2],
-        "instrument_id": instrument_ids.inserted_ids[2],
+        "instrument_id": instrument_ids.inserted_ids[3],
         "event_type": "check_out",
         "time": datetime.datetime(2022, 11, 2, 00, 00, 00)
     }

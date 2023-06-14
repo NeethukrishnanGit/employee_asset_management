@@ -232,3 +232,19 @@ async def check_in_multiple(
         check_ins.update({"invalid_instruments": invalid_instruments})
 
     return check_ins
+
+
+@instrument_app.post("/check_out_status")
+async def check_out_status():
+    instruments = instrument_Collection.find()
+    status_data = []
+    for i in instruments:
+        if not i["availability"]:
+            audit_data = list(audit_trail_Collection.find({"instrument_id": i["_id"]},
+                                                          {"_id": 0, "user_id": 1, "time": 1}))
+            i.update({"check_out_status": audit_data[-1]})
+        else:
+            i.update({"check_out_status": "NIL"})
+        status_data.append(i)
+    return {"status_data": status_data}
+
