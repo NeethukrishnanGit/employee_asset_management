@@ -13,11 +13,17 @@ audit_app = APIRouter()
 @audit_app.post("/read_audit_trail_data")
 async def read_audit_trail_data(value: Dict):
     """Endpoint to fetch the audit trail data from the db"""
-    for i in value.keys():
-        if i in ["_id", "user_id", "instrument_id"]:
-            value[i] = ObjectId(value[i])
-    data = list(audit_trail_Collection.find(value))
-    return {"audit_data": data}
+    try:
+        for i in value.keys():
+            if i in ["_id", "user_id", "instrument_id"]:
+                value[i] = ObjectId(value[i])
+            if i == "event_type":
+                if value[i] not in ["check_out", "check_in"]:
+                    return "Invalid Event type..."
+        data = list(audit_trail_Collection.find(value))
+        return {"audit_data": data}
+    except InvalidId:
+        return "Invalid entry... "
 
 
 @audit_app.delete("/delete_audit_trail_data")

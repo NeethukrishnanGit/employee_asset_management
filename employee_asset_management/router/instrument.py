@@ -93,6 +93,10 @@ async def check_in_instrument(user_id: str, instrument_id: str):
         user_id_check = user_Collection.find_one({"_id": ObjectId(user_id)})
         if not user_id_check:
             raise Exception("user id is invalid...")
+        availability_check = instrument_Collection.find_one({"_id": ObjectId(instrument_id), "availability": False})
+        if not availability_check:
+            return {
+                "checked_in_instrument": [{"_id": instrument_id, "check_in": "instrument is already checked_in"}]}
         instrument_query = {"_id": ObjectId(instrument_id)}
         instrument_update = {"$set": {"availability": True,
                                       "check_in": datetime.now(),
@@ -159,6 +163,7 @@ async def check_out_multiple(
         *,
         user_id: str = Body(..., embed=True),
         instruments_list: list[str] = Body(...)):
+    """ Endpoint to check_out multiple instruments """
     invalid_instruments = []
     for instrument_id in instruments_list:
         try:
@@ -179,7 +184,51 @@ async def check_out_multiple(
             already_checked_out.append(check)
         else:
             check_out_list.append(check)
-    check_outs = {"multiple_checkouts": check_out_list,
-                  "already_checked_out": already_checked_out,
-                  "invalid_instruments": invalid_instruments}
+    check_outs = {}
+    if check_out_list:
+        check_outs.update({"multiple_checkouts": check_out_list})
+    if already_checked_out:
+        check_outs.update({"already_checked_out": already_checked_out})
+    if invalid_instruments:
+        check_outs.update({"invalid_instruments": invalid_instruments})
+
     return check_outs
+
+
+@instrument_app.post("/check_in_multiple",
+                     description="Enter multiple instruments inside the instruments_list to check_in")
+async def check_in_multiple(
+        *,
+        user_id: str = Body(..., embed=True),
+        instruments_list: list[str] = Body(...)):
+    """ Endpoint to check_in multiple instruments """
+    invalid_instruments = []
+    for instrument_id in instruments_list:
+        try:
+            instrument_id_check = instrument_Collection.find_one({"_id": ObjectId(instrument_id)})
+            if not instrument_id_check:
+                instruments_list.remove(instrument_id)
+                invalid_instruments.append(instrument_id)
+        except InvalidId:
+            instruments_list.remove(instrument_id)
+            invalid_instruments.append(instrument_id)
+
+    instruments = [await check_in_instrument(user_id, instrument) for instrument in instruments_list]
+    already_checked_in = []
+    check_in_list = []
+    for check_in in instruments:
+        check = check_in["checked_in_instrument"][0]
+        print(check)
+        if check["check_in"] == "instrument is already checked_in":
+            already_checked_in.append(check)
+        else:
+            check_in_list.append(check)
+    check_ins = {}
+    if check_in_list:
+        check_ins.update({"multiple_checkins": check_in_list})
+    if already_checked_in:
+        check_ins.update({"already_checked_in": already_checked_in})
+    if invalid_instruments:
+        check_ins.update({"invalid_instruments": invalid_instruments})
+
+    return check_ins
