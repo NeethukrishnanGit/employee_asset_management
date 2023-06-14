@@ -50,8 +50,6 @@ async def delete_one_instrument(instrument_id: str = Body(..., embed=True)):
 async def add_one_instrument(instrument: Instruments):
     """Endpoint to add instruments"""
     names = [i["name"] for i in instrument_Collection.find({}, {"_id": 0, "name": 1})]
-    print(names)
-    print(instrument.name)
     data_dict = instrument.dict()
     if instrument.name in names:
         return {"error": "instrument name is already taken!!!, try a different name"}
@@ -91,9 +89,7 @@ def get_one_instrument(instrument_id: str):
     return list(data)
 
 
-@instrument_app.post("/check_in_instrument")
 async def check_in_instrument(user_id: str, instrument_id: str):
-    """Endpoint to Check in an instrument"""
     try:
         # instrument_id check
         instrument_id_check = instrument_Collection.find_one({"_id": ObjectId(instrument_id)})
@@ -127,9 +123,7 @@ async def check_in_instrument(user_id: str, instrument_id: str):
         return str(e)
 
 
-@instrument_app.post("/check_out_instrument")
 async def check_out_instrument(user_id: str, instrument_id: str):
-    """Endpoint to Check out an instrument"""
     try:
         # user_id check
         user_id_check = user_Collection.find_one({"_id": ObjectId(user_id)})
@@ -167,9 +161,9 @@ async def check_available_instruments():
     return {"instruments_available": list(data)}
 
 
-@instrument_app.post("/check_out_multiple",
+@instrument_app.post("/check_out_instruments",
                      description="Enter multiple instruments inside the instruments_list to check_out")
-async def check_out_multiple(
+async def check_out_instruments(
         *,
         user_id: str = Body(..., embed=True),
         instruments_list: list = Body(...)):
@@ -205,9 +199,9 @@ async def check_out_multiple(
     return check_outs
 
 
-@instrument_app.post("/check_in_multiple",
+@instrument_app.post("/check_in_instruments",
                      description="Enter multiple instruments inside the instruments_list to check_in")
-async def check_in_multiple(
+async def check_in_instruments(
         *,
         user_id: str = Body(..., embed=True),
         instruments_list: list = Body(...)):
