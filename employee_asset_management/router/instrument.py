@@ -162,7 +162,7 @@ async def check_available_instruments():
 async def check_out_multiple(
         *,
         user_id: str = Body(..., embed=True),
-        instruments_list: list[str] = Body(...)):
+        instruments_list: list = Body(...)):
     """ Endpoint to check_out multiple instruments """
     invalid_instruments = []
     for instrument_id in instruments_list:
@@ -200,7 +200,7 @@ async def check_out_multiple(
 async def check_in_multiple(
         *,
         user_id: str = Body(..., embed=True),
-        instruments_list: list[str] = Body(...)):
+        instruments_list: list = Body(...)):
     """ Endpoint to check_in multiple instruments """
     invalid_instruments = []
     for instrument_id in instruments_list:
@@ -240,11 +240,10 @@ async def check_out_status():
     status_data = []
     for i in instruments:
         if not i["availability"]:
-            audit_data = list(audit_trail_Collection.find({"instrument_id": i["_id"]},
-                                                          {"_id": 0, "user_id": 1, "time": 1}))
-            i.update({"check_out_status": audit_data[-1]})
-        else:
-            i.update({"check_out_status": "NIL"})
-        status_data.append(i)
+            audit = audit_trail_Collection.find({"instrument_id": ObjectId(i["_id"]), "event_type": "check_out"})
+            audit_data = list(audit)
+            for data in audit_data:
+                i.update({"check_out_status": "True", "check_out_by": data['user_id'], "check_out_time": data["time"]})
+            status_data.append(i)
     return {"status_data": status_data}
 
