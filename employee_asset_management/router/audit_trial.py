@@ -61,9 +61,9 @@ async def insert_audit_trail_data(given_value: Audit):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@audit_app.post("/checked_in_instruments")
-async def get_checked_in_instruments(user_id: str = Body(..., embed=True)):
-    """Endpoint that displays the instruments that are checked in by a specific employee"""
+@audit_app.post("/checked_out_instruments")
+async def get_checked_out_instruments(user_id: str = Body(..., embed=True)):
+    """Endpoint that displays the instruments that are checked out by a specific employee"""
     try:
         if {"_id": ObjectId(user_id)} in list(user_Collection.find({}, {"_id": True})):
             find_query = {"user_id": ObjectId(user_id), "event_type": "check_out"}
@@ -71,8 +71,8 @@ async def get_checked_in_instruments(user_id: str = Body(..., embed=True)):
             data = list(audit_trail_Collection.find(find_query, find_data))
             available_instruments = [{"_id": ObjectId(instrument["instrument_id"])} for instrument in data]
             get_query = {"$or": available_instruments}
-            find_instruments = instrument_Collection.find(get_query)
-            return list(find_instruments)
+            find_instruments = list(instrument_Collection.find(get_query))
+            return {"checked out instruments": find_instruments}
         else:
             raise HTTPException(status_code=404, detail="user id not exist...")
     except InvalidId as e1:
