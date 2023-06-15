@@ -40,11 +40,6 @@ async def delete_one_instrument(instrument_id: str = Body(..., embed=True)):
 
 @instrument_app.post(
     "/add_one_instrument",
-    response_model=Instruments,
-    status_code=status.HTTP_201_CREATED,
-)
-@instrument_app.post(
-    "/add_one_instrument",
     status_code=status.HTTP_201_CREATED
 )
 async def add_one_instrument(instrument: Instruments):
